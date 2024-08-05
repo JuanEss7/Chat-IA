@@ -1,31 +1,27 @@
 ---
-
+import {getSession} from "auth-astro/server"
+const session = await getSession(Astro.request);
+if(!session || !session.user){
+    return Astro.redirect('/')
+}
+const user_name = session.user.name!.split(' ')[0] ?? '';
 ---
 
-<form class="form_model_select">
-    <label
-        >Escoge un modelo:
-        <select
-            class="form-select model_selector"
-            id="model_selector"
-            aria-label="Default select example"
-        >
-            <option value="smol">SMOL</option>
-            <option value="tiny">TinyLLama - 697.24 VRAM</option>
-            <option value="gemma_2">Gemma - 1476.52 VRAM</option>
-            <option value="gemma">Gemma - 1750.66 VRMA</option>
-            <option value="phi">Phi - 3053.97 VRAM</option>
-            <option value="hermes">Hermes - 4976.13 VRAM</option>
-            <option value="llama">LLama - 5295.7 VRAM</option>
-        </select>
-    </label>
-    <button type="submit">Seleccionar</button>
-</form>
 <main>
     <ul class="container_messages">
         <li class="message bot">
-            <span>Bot</span>
-            <p>Hola, en que puedo ayudarte?</p>
+            <div>
+                <img src="../../../public/bot.png" class="sender_image"/>
+                <span>Bot</span>  
+            </div>
+            <p>Hola {user_name}, en que puedo ayudarte?</p>
+        </li>
+        <li class="message user">
+            <div>
+                <img src="../../../public/user.png" class="sender_image"/>
+                <span>Tu</span>  
+            </div>
+            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Doloribus, molestiae commodi. Voluptates, quas quasi! Ratione laudantium voluptates iste, sed ducimus vero tenetur deleniti culpa possimus soluta corporis asperiores cupiditate quo!</p>
         </li>
     </ul>
     <form class="form_chat">
@@ -35,47 +31,19 @@
     <small></small>
     <template class="template_message">
         <li class="message">
-            <span></span>
+            <div>
+                <img class="sender_image"/>
+                <span></span>  
+            </div>
             <p></p>
         </li>
     </template>
 </main>
-<span class="info_load"></span>
+<span class="gpu_info"></span>
 <style>
-    .form_model_select {
-        /* border: 1px solid; */
-        width: 100%;
-        height: min-content;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-evenly;
-        > label {
-            /* border: 1px solid; */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 8px;
-            font-weight: bold;
-            > .model_selector {
-                width: 100%;
-                height: 40px;
-                font-size: 0.9rem;
-            }
-        }
-        > button {
-            border: 0;
-            height: 40px;
-            border-radius: 5px;
-            padding: 5px 8px;
-            background-color: rgba(68, 136, 238, 0.813);
-            color: #fff;
-            cursor: pointer;
-        }
-    }
     main {
         position: relative;
-        box-shadow: 0px 0px 15px #0004;
+        box-shadow: 0px 0px 10px #0004;
         background-color: #fff;
         border: 0;
         border-radius: 15px;
@@ -94,6 +62,8 @@
                 flex: 1;
                 padding: 3px 5px;
                 border-radius: 10px;
+                border:.5px solid;
+                font-size: .9rem;
             }
             > button {
                 border: 0;
@@ -122,24 +92,33 @@
             width: fit-content;
             display: flex;
             flex-direction: column;
-            > span {
-                width: 30px;
+            > div {
+                width: min-content
                 height: 30px;
                 margin-bottom: 10px;
+                padding: 6px 7px;
                 border: 0;
-                border-radius: 999999999px;
-                font-weight: 500;
-                font-size: 0.8rem;
-                background-color: aqua;
-                display: grid;
-                place-content: center;
+                border-radius: 18px;
+                background-color: rgba(0, 255, 255, 0.398);
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap:10px;
+                > .sender_image {
+                    width: 25px;
+                    height: 25px;
+                    border-radius: 99999px;
+                }
+                > span{
+                    font-weight: 700;
+                    font-size: .9rem;
+                }
             }
             > p {
-                background-color: bisque;
                 width: clamp(min-content, min-content, 50%);
                 border-radius: 10px;
-                padding: 5px;
-                font-size: 1rem;
+                padding: 6px;
+                font-size: .9rem;
             }
         }
     }
@@ -150,6 +129,9 @@
     .user {
         align-self: flex-end;
         align-items: flex-end;
+        > div {
+            flex-direction: row-reverse;
+        }
     }
     small {
         position: absolute;
@@ -160,7 +142,7 @@
         font-weight: bold;
         color: rgb(183, 8, 8);
     }
-    .info_load {
+    .gpu_info {
         user-select: none;
         position: fixed;
         left: 30px;

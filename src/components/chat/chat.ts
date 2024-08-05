@@ -10,7 +10,7 @@ const form = document.querySelector(".form_chat") as HTMLFormElement;
 const input = form?.querySelector("input") as HTMLInputElement;
 const button = form?.querySelector("button") as HTMLButtonElement;
 const errorMessage = document.querySelector("small") as HTMLSpanElement;
-const infoLoadEngine = document.querySelector(".info_load") as HTMLSpanElement;
+const gpu_info = document.querySelector(".gpu_info") as HTMLSpanElement;
 const form_select_model = document.querySelector(
     ".form_model_select",
 ) as HTMLFormElement;
@@ -21,7 +21,7 @@ const modelsIA = {
     phi: "phi-2-q4f16_1-MLC",
     gemma: "gemma-2b-it-q4f32_1-MLC",
     gemma_2: "gemma-2b-it-q4f16_1-MLC",
-    tiny: "TinyLlama-1.1B-Chat-v0.4-q4f16_1-MLC",
+    tiny: "TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC",
 };
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: 'module' })
 let engine: WebWorkerMLCEngine;
@@ -29,6 +29,11 @@ worker.addEventListener('error', (msg) => {
     console.log(msg)
 })
 let selectedModel: string;
+let userInfo: any;
+document.addEventListener('DOMContentLoaded', async () => {
+    const resp = await fetch('/api/getUser');
+    userInfo = await resp.json();
+})
 form_select_model.addEventListener("submit", async (e) => {
     e.preventDefault();
     const model_selected = new FormData(form_select_model).get(
@@ -49,6 +54,10 @@ interface MessagesInterface {
     tool_call_id?: string
 }
 let messages: MessagesInterface[][] = [];
+
+
+
+
 form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMessage.style.display = "none";
@@ -109,30 +118,34 @@ form?.addEventListener("submit", async (e) => {
     messages.push([{ role: 'assistant', content: 'hola' }, userMessage]);
     button.removeAttribute("disabled");
     container_messages.scrollTop = container_messages.scrollHeight;
-    await addMessageToDb(messages, selectedModel);
+    // await addMessageToDb(messages, selectedModel);
     // if(!res.ok){
     //     const
     // }
 });
 
 //TODO:EL PARAM SEA UN OBJ, TIPARLO
-function addMessage(role: "assistant" | "user", message: string) {
+async function addMessage(role: "assistant" | "user", message: string) {
     const template_message = template.content.cloneNode(
         true,
     ) as HTMLElement;
     const message_container = template_message.querySelector(
         ".message",
     ) as HTMLLIElement;
+    const sender_image = message_container.querySelector('.sender_image') as HTMLImageElement;
     const span_role = message_container.querySelector(
         "span",
     ) as HTMLSpanElement;
     const text = message_container.querySelector(
         "p",
     ) as HTMLParagraphElement;
+    const image_user = userInfo.image ?? "../../../public/user.png";
+    const image_bot = "../../../public/bot.png";
+    const user_name = userInfo.name ?? 'Tú';
 
-    const message_role = role === "assistant" ? "bot" : "Tu";
     message_container.classList.add(role);
-    span_role.textContent = message_role;
+    sender_image.setAttribute('src', role === 'user' ? image_user : image_bot);
+    span_role.textContent = role === 'user' ? user_name : 'Bot';
     text.textContent = message;
 
     container_messages?.appendChild(message_container);
@@ -140,21 +153,27 @@ function addMessage(role: "assistant" | "user", message: string) {
     return text;
 }
 async function createEngine(selectedModel: string) {
+    const modal = document.getElementById('myModal') as HTMLDivElement;
+    const info_load_engine = modal.querySelector('.content-load-engine') as HTMLSpanElement;
     if (!selectedModel) {
         alert('Por favor selecciona modelo antes enviar un mensaje.')
         return
     }
     const newEngine = await CreateWebWorkerMLCEngine(
         worker,
-        selectedModel,
+        "SmolLM-135M-Instruct-q4f32_1-MLC",
         {
             initProgressCallback: (info) => {
                 console.log(info);
-                infoLoadEngine.textContent = info.text;
                 if (info.progress === 1) {
+                    info_load_engine.textContent = 'Completado.';
+                    modal.style.display = 'none';
                     button.removeAttribute("disabled");
+                    gpu_info.textContent = info.text;
                 } else {
                     button.setAttribute("disabled", 'true');
+                    modal.style.display = 'block';
+                    info_load_engine.textContent = info.text;
                 }
             },
         },

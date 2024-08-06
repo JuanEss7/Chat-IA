@@ -1,0 +1,66 @@
+---
+import type { Session } from "@auth/core/types";
+import { SignIn } from "auth-astro/components";
+---
+
+<div>
+    <h1>Ingresar</h1>
+    <SignIn provider="google" class="session_btn google">
+        <img src="../../../public/icons/google.svg" alt="logo google" />
+        <span>Ingresar con Google</span>
+    </SignIn>
+    <SignIn provider="github" class="session_btn github">
+        <img src="../../../public/icons/github.svg" alt="logo github" />
+        <span>Ingresar con GitHub</span>
+    </SignIn>
+</div>
+
+<style>
+    div {
+        height: 80%;
+        width: max-content;
+        border: 0;
+        background-color: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    h1 {
+        font-size: 1.7rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    .session_btn {
+        width: max-content;
+        height: 50px;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        color: #ffff;
+        border: 0px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+        font-size: 0.9rem;
+        &:hover {
+            opacity: 0.8;
+        }
+        > img {
+            width: 25px;
+        }
+        > span {
+            flex: 1;
+        }
+    }
+    .google {
+        background-color: #bbb;
+    }
+    .github {
+        background-color: #0d1117;
+        fill: #ffff;
+    }
+</style>

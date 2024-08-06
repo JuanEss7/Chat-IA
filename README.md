@@ -15,6 +15,6 @@
 ////////
 1. Ajustar el modal y agregarle funcionalidad ✅
 2. Cambiar estilo de mensajes ✅
-3. Migrar el guardado de mensajes al localStorage
-4. Refactorizar el codigo
+3. Migrar el guardado de mensajes al localStorage ✅
+4. Refactorizar el codigo ✅
 5. Test con playwrigth

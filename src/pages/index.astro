@@ -1,16 +1,76 @@
 ---
+import Session from "../components/session/Session.astro";
+import Layout from "../layouts/Layout.astro";
+import { getSession } from "auth-astro/server";
+const session = await getSession(Astro.request);
+//GOOGLE
+//{"name":"Juan Sanchez","email":"jsanchez123456j789@gmail.com","image":"https://lh3.googleusercontent.com/a/ACg8ocIXnQijLFrL0uVqwLpW91m-QQOakhhrFtmd8n7nlFreTDKTZQ=s96-c"}
 
+//GITHUB
+//{"name":"JuanEss7","email":"juanplazas28pa@gmail.com","image":"https://avatars.githubusercontent.com/u/132094294?v=4"}
+if (session) {
+	return Astro.redirect("/chat");
+}
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Inicio">
+	<div class="container_session">
+		<div class="consideraciones">
+			<h2>Puntos a tener en cuenta:</h2>
+			<ol>
+				<li>
+					El modelo utiliza toda la potencia grafica de tu gpu(Tarjeta
+					grafica).
+				</li>
+				<li>
+					Entre mas pesado el modelo la respuesta de la IA sera mejor.
+				</li>
+				<li>
+					Una vez descargado el modelo se guarda de manera local en la
+					cache de el navegador.
+				</li>
+				<li>
+					Se pude usar sin interner siempre y cuando se haya
+					descargado previamente el modelo y el cache no haya sido
+					borrado.
+				</li>
+			</ol>
+		</div>
+		<Session />
+	</div>
+</Layout>
+<style>
+	.container_session {
+		width: 50dvw;
+		height: min-content;
+		padding: 30px 20px;
+		background-color: #fff;
+		box-shadow: 0px 0px 15px #0004;
+		border-radius: 10px;
+		border: 0;
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+	}
+	.consideraciones {
+		height: 80%;
+		width: 50%;
+		display: flex;
+		flex-direction: column;
+		/* align-items: flex-start;
+		justify-content: flex-start; */
+		gap: 20px;
+		> h2 {
+			font-size: 1.4rem;
+			font-weight: 600;
+		}
+		> ol {
+			> li {
+				list-style: decimal;
+				&::marker {
+					font-weight: bold;
+				}
+			}
+		}
+	}
+</style>

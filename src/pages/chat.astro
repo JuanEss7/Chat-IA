@@ -1,0 +1,48 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ChatIA from "../components/chat/ChatIA.astro";
+import SelectModel from "../components/chat/select-model/SelectModel.astro";
+import ModalEngine from "../components/chat/load-engine-modal/ModalEngine.astro";
+import { SignOut } from "auth-astro/components";
+import { getSession } from "auth-astro/server";
+
+const session = await getSession(Astro.request);
+if (!session) {
+    return Astro.redirect("/");
+}
+---
+
+<Layout title="Chat">
+    <ModalEngine />
+    <div class="conatiner_chat">
+        <SelectModel />
+        <ChatIA />
+        <SignOut class="btn_signOut">Logout</SignOut>
+    </div>
+</Layout>
+<style>
+    .conatiner_chat {
+        width: 400px;
+        /* border: 1px solid; */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
+    .btn_signOut {
+        width: 100px;
+        height: 45px;
+        padding: 10px 15px;
+        border: 0px;
+        border-radius: 5px;
+        color: #ffff;
+        text-align: center;
+        cursor: pointer;
+        background-color: #b22;
+        transition: opacity 0.2s ease;
+        &:hover {
+            opacity: 0.7;
+        }
+    }
+</style>

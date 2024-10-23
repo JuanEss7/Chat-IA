@@ -13,12 +13,9 @@ export interface User {
 }
 export enum ModelsIA {
     smol = "SmolLM-135M-Instruct-q4f32_1-MLC",
-    llama = "Llama-3.1-8B-Instruct-q4f32_1-MLC-1k",
-    hermes = "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC",
-    phi = "phi-2-q4f16_1-MLC",
-    gemma = "gemma-2b-it-q4f32_1-MLC",
-    gemma_2 = "gemma-2b-it-q4f16_1-MLC",
     tiny = "TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC",
+    gemma = "gemma-2b-it-q4f32_1-MLC",
+    stable = "stablelm-2-zephyr-1_6b-q4f32_1-MLC",
 };
 // export type MessagesToSave = MessagesInterface[][];
 // const model: ModelSelectedUser = 'phi';

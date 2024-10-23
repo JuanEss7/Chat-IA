@@ -1,27 +1,20 @@
 ---
-import {getSession} from "auth-astro/server"
+import { getSession } from "auth-astro/server";
 const session = await getSession(Astro.request);
-if(!session || !session.user){
-    return Astro.redirect('/')
+if (!session || !session.user) {
+    return Astro.redirect("/");
 }
-const user_name = session.user.name!.split(' ')[0] ?? '';
+const user_name = session.user.name!.split(" ")[0] ?? "";
 ---
 
 <main>
     <ul class="container_messages">
         <li class="message bot">
             <div>
-                <img src="../../../public/bot.png" class="sender_image"/>
-                <span>Bot</span>  
+                <img src="../../../public/bot.png" class="sender_image" />
+                <span>Bot</span>
             </div>
             <p>Hola {user_name}, en que puedo ayudarte?</p>
-        </li>
-        <li class="message user">
-            <div>
-                <img src="../../../public/user.png" class="sender_image"/>
-                <span>Tu</span>  
-            </div>
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Doloribus, molestiae commodi. Voluptates, quas quasi! Ratione laudantium voluptates iste, sed ducimus vero tenetur deleniti culpa possimus soluta corporis asperiores cupiditate quo!</p>
         </li>
     </ul>
     <form class="form_chat">
@@ -32,8 +25,8 @@ const user_name = session.user.name!.split(' ')[0] ?? '';
     <template class="template_message">
         <li class="message">
             <div>
-                <img class="sender_image"/>
-                <span></span>  
+                <img class="sender_image" />
+                <span></span>
             </div>
             <p></p>
         </li>
@@ -62,8 +55,8 @@ const user_name = session.user.name!.split(' ')[0] ?? '';
                 flex: 1;
                 padding: 3px 5px;
                 border-radius: 10px;
-                border:.5px solid;
-                font-size: .9rem;
+                border: 0.5px solid;
+                font-size: 0.9rem;
             }
             > button {
                 border: 0;
@@ -87,13 +80,14 @@ const user_name = session.user.name!.split(' ')[0] ?? '';
         flex-direction: column;
         gap: 10px;
         overflow-y: auto;
+        overflow-x: none;
         scroll-behavior: smooth;
-        & li {
+        & .message {
             width: fit-content;
             display: flex;
             flex-direction: column;
             > div {
-                width: min-content
+                width: min-content;
                 height: 30px;
                 margin-bottom: 10px;
                 padding: 6px 7px;
@@ -103,22 +97,25 @@ const user_name = session.user.name!.split(' ')[0] ?? '';
                 display: flex;
                 align-items: center;
                 justify-content: flex-start;
-                gap:10px;
+                gap: 10px;
                 > .sender_image {
                     width: 25px;
                     height: 25px;
                     border-radius: 99999px;
                 }
-                > span{
+                > span {
                     font-weight: 700;
-                    font-size: .9rem;
+                    font-size: 0.9rem;
                 }
             }
             > p {
-                width: clamp(min-content, min-content, 50%);
+                width: fit-content;
+                max-width: 320px;
+                overflow-x: auto;
+                text-wrap: wrap;
                 border-radius: 10px;
                 padding: 6px;
-                font-size: .9rem;
+                font-size: 0.9rem;
             }
         }
     }

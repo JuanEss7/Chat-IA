@@ -3,7 +3,7 @@ import type { Session } from "@auth/core/types";
 import { SignIn } from "auth-astro/components";
 ---
 
-<div>
+<div class="session_container">
     <h1>Ingresar</h1>
     <SignIn provider="google" class="session_btn google">
         <img src="../../../public/icons/google.svg" alt="logo google" />
@@ -16,7 +16,7 @@ import { SignIn } from "auth-astro/components";
 </div>
 
 <style>
-    div {
+    .session_container {
         height: 80%;
         width: max-content;
         border: 0;

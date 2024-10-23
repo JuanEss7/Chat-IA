@@ -13,16 +13,18 @@ const input = form?.querySelector("input") as HTMLInputElement;
 const button = form?.querySelector("button") as HTMLButtonElement;
 const errorMessage = document.querySelector("small") as HTMLSpanElement;
 const gpu_info = document.querySelector(".gpu_info") as HTMLSpanElement;
+const modal = document.getElementById('myModal') as HTMLDivElement;
+const info_load_engine = modal.querySelector('.content-load-engine') as HTMLSpanElement;
 const form_select_model = document.querySelector(
     ".form_model_select",
 ) as HTMLFormElement;
-let engine: WebWorkerMLCEngine;
+let engine: WebWorkerMLCEngine | null;
 let selectedModel: ModelsIA;
 let model_selected: ModelSelectedUser;
 let userInfo: User;
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: 'module' })
 let messages: MessagesInterface[] = [];
-
+let conversation: MessagesInterface[] = [];
 worker.addEventListener('error', (msg) => {
     console.log('Ocurri un error en el worker', msg)
 })
@@ -39,7 +41,18 @@ async function SelectModelEngine(e: SubmitEvent) {
     }
     selectedModel = ModelsIA[model_selected] ?? ModelsIA['smol'];
     const newEngine = await CreateEngine(selectedModel);
-    engine = newEngine!;
+    if (newEngine) {
+        engine = newEngine;
+        //Cada vez que se escoja un nuevo modelo se limpiara con el fin de no afectar la conversacion con el nuevo modelo.
+        messages = [];
+    } else {
+        alert('Ocurrio un error al cargar el modelo, por favor intentalo mas tarde.');
+        info_load_engine.textContent = 'Completado.';
+        modal.style.display = 'none';
+        button.removeAttribute("disabled");
+        gpu_info.textContent = '';
+    }
+    console.log({ newEngine2: newEngine })
 }
 async function DOMloaded() {
     const resp = await fetch('/api/getUser');
@@ -47,16 +60,17 @@ async function DOMloaded() {
     userInfo = await resp.json();
     const infoStorage = getMessage(userInfo.email);
     if (!infoStorage) return
-    const { messagesLocal = [], model = 'tiny' } = infoStorage;
+    const { conversationLocal = [], model = 'tiny', messagesLocal = [] } = infoStorage;
     const value_selected = document.getElementById('model_selector') as HTMLSelectElement;
-    messagesLocal.map(message => {
-        messages.push(message);
+    messages = messagesLocal
+    conversationLocal.map(message => {
+        conversation.push(message);
         CreateMessage(message.role, message.content)
     });
     value_selected.value = model;
     model_selected = model;
 }
-async function CreateMessage(role: Role, message: string) {
+function CreateMessage(role: Role, message: string) {
     const template_message = template.content.cloneNode(
         true,
     ) as HTMLElement;
@@ -85,64 +99,67 @@ async function CreateMessage(role: Role, message: string) {
 }
 async function GenerateMessageBot(engine: WebWorkerMLCEngine) {
     let reply = "";
-    // const response = await engine.chat.completions.create({
-    //     messages,
-    //     temperature: 1,
-    //     stream: true,
-    // });
-    // const textParagraph = CreateMessage("assistant", "");
-    // for await (const chunk of response) {
-    //     const [choice] = chunk.choices;
-    //     //choice?.delta? ---->  {role:'assistand', content:''}
-    //     const content = choice?.delta?.content ?? "";
-    //     reply += content;
-    //     textParagraph.textContent = reply;
-    // }
-    // const botMessage: MessagesInterface = {
-    //     role: "assistant",
-    //     content: reply,
-    // };
-    //SIN APLICAR EL STREAM, es decir, me devuelve el contenido una vez se haya completado la 
-    //repuesta de la IA
-    // //response.choices[0].message ----> {role:'assistand', content:''}
+    if (!engine) return
+    const response = await engine.chat.completions.create({
+        messages,
+        temperature: 1,
+        stream: true,
+    });
+    const textParagraph = CreateMessage("assistant", "");
+    for await (const chunk of response) {
+        const [choice] = chunk.choices;
+        //choice?.delta? ---->  {role:'assistand', content:''}
+        const content = choice?.delta?.content ?? "";
+        reply += content;
+        textParagraph.textContent = reply;
+    }
+    const botMessage: MessagesInterface = {
+        role: "assistant",
+        content: reply,
+    };
+    // SIN APLICAR EL STREAM, me devuelve el contenido una vez se haya completado la 
+    // repuesta de la IA y se haria de la siguiente forma
+    //response.choices[0].message ----> {role:'assistand', content:''}
     // const botMessage = response.choices[0].message;
-    // if (!botMessage.content) {
-    // 	return;
-    // }
-    //CreateMessage(botMessage.role,botMessage.content);
-    //return  botMessage
+    if (!botMessage.content) {
+        return;
+    }
+    return botMessage
 }
 async function CreateEngine(selectedModel: string) {
-    const modal = document.getElementById('myModal') as HTMLDivElement;
-    const info_load_engine = modal.querySelector('.content-load-engine') as HTMLSpanElement;
     if (!selectedModel) {
         alert('Por favor selecciona modelo antes enviar un mensaje.')
         return
     }
-    const newEngine = await CreateWebWorkerMLCEngine(
-        worker,
-        "SmolLM-135M-Instruct-q4f32_1-MLC",
-        {
-            initProgressCallback: (info) => {
-                console.log(info);
-                if (info.progress === 1) {
-                    info_load_engine.textContent = 'Completado.';
-                    modal.style.display = 'none';
-                    button.removeAttribute("disabled");
-                    gpu_info.textContent = info.text;
-                } else {
-                    button.setAttribute("disabled", 'true');
-                    modal.style.display = 'block';
-                    info_load_engine.textContent = info.text;
-                }
+    console.log({ selectedModel })
+    let newEngine;
+    try {
+        newEngine = await CreateWebWorkerMLCEngine(
+            worker,
+            selectedModel,
+            {
+                initProgressCallback: (info) => {
+                    console.log({ info })
+                    if (info.progress === 1) {
+                        info_load_engine.textContent = 'Completado.';
+                        modal.style.display = 'none';
+                        button.removeAttribute("disabled");
+                        gpu_info.textContent = info.text;
+                    } else {
+                        button.setAttribute("disabled", 'true');
+                        modal.style.display = 'block';
+                        info_load_engine.textContent = info.text;
+                    }
+                },
             },
-        },
-    );
-    if (!newEngine) {
-        alert('Ocurrio un error al cargar el modelo, por favor intentalo mas tarde.')
+        );
+        console.log({ newEngine })
+        return newEngine
+    } catch (error) {
+        console.log(error)
         return
     }
-    return newEngine
+
 }
 async function AddMessagesToChat(e: SubmitEvent) {
     e.preventDefault();
@@ -170,16 +187,18 @@ async function AddMessagesToChat(e: SubmitEvent) {
         content: message,
     };
     CreateMessage("user", message);
+    messages.push(userMessage)
     input.value = "";
     button.setAttribute('disabled', 'true');
+    const botMessage = await GenerateMessageBot(engine) as MessagesInterface;
+    messages.push({ role: botMessage?.role, content: botMessage?.content });
 
-    // const botMessage = await GenerateMessageBot(engine);
-    // messages.push(botMessage, userMessage);
-    messages.push(userMessage, { role: 'assistant', content: 'hola' });
+    conversation.push(userMessage, { role: botMessage.role, content: botMessage.content })
     button.removeAttribute("disabled");
     container_messages.scrollTop = container_messages.scrollHeight;
     const infoToSave = {
         messages,
+        conversation,
         model: model_selected,
         email: userInfo.email,
         name: userInfo.name

@@ -1,19 +1,22 @@
 import type { MessagesInterface, ModelSelectedUser } from "../../types";
 interface Values {
     messages: MessagesInterface[],
+    conversation: MessagesInterface[],
     model: ModelSelectedUser,
     email: string,
     name: string
 }
 export function saveMessage(content: Values) {
-    const { email, messages, model, name } = content;
-    const messageToSave = {
+    const { email, messages, model, name, conversation } = content;
+    const infoToSave = {
         email,
         model,
         messages,
+        conversation
     }
-    return window.localStorage.setItem(email, JSON.stringify(messageToSave))
+    return window.localStorage.setItem(email, JSON.stringify(infoToSave))
 }
+//Estructura del mensaje
 //{
 //     messages: [
 //       [

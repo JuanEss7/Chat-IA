@@ -18,17 +18,22 @@ const info_load_engine = modal.querySelector('.content-load-engine') as HTMLSpan
 const form_select_model = document.querySelector(
     ".form_model_select",
 ) as HTMLFormElement;
+const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: 'module' })
 let engine: WebWorkerMLCEngine | null;
 let selectedModel: ModelsIA;
 let model_selected: ModelSelectedUser;
 let userInfo: User;
-const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: 'module' })
+//Array que contendra los mensajes que se crean al momento de usar un modelo
+//Cada vez que se cambie de modelo se limpiara con el fin de no afectar el siguiente modelo
 let messages: MessagesInterface[] = [];
+//Array que contiene todos los mensajes generados con todos los modelos de IA
 let conversation: MessagesInterface[] = [];
+
 worker.addEventListener('error', (msg) => {
     console.log('Ocurri un error en el worker', msg)
 })
 
+//Funcion que obtiene el modelo IA seleccionado por el usuario y ejecuta la funcion createEngine
 async function SelectModelEngine(e: SubmitEvent) {
     e.preventDefault();
     const value_selected = new FormData(form_select_model).get(
@@ -39,7 +44,7 @@ async function SelectModelEngine(e: SubmitEvent) {
         alert("El modelo que estas seleccionando no existe");
         return;
     }
-    selectedModel = ModelsIA[model_selected] ?? ModelsIA['smol'];
+    selectedModel = ModelsIA[model_selected] ?? ModelsIA['tiny'];
     const newEngine = await CreateEngine(selectedModel);
     if (newEngine) {
         engine = newEngine;
@@ -52,8 +57,9 @@ async function SelectModelEngine(e: SubmitEvent) {
         button.removeAttribute("disabled");
         gpu_info.textContent = '';
     }
-    console.log({ newEngine2: newEngine })
 }
+//Funcion que se ejecuta al momento de que carga la pagina, obtiene el usuario, el modelo de IA
+//Y la conversacion guardada en el localStorge
 async function DOMloaded() {
     const resp = await fetch('/api/getUser');
     if (!resp.ok) return
@@ -70,6 +76,7 @@ async function DOMloaded() {
     value_selected.value = model;
     model_selected = model;
 }
+//Funcion que crea la estructura html de un mensaje
 function CreateMessage(role: Role, message: string) {
     const template_message = template.content.cloneNode(
         true,
@@ -97,6 +104,7 @@ function CreateMessage(role: Role, message: string) {
     container_messages.scrollTop = container_messages.scrollHeight;
     return text;
 }
+//Funcion que obtiene el la respuesta generada por la IA y la retorna
 async function GenerateMessageBot(engine: WebWorkerMLCEngine) {
     let reply = "";
     if (!engine) return
@@ -122,16 +130,17 @@ async function GenerateMessageBot(engine: WebWorkerMLCEngine) {
     //response.choices[0].message ----> {role:'assistand', content:''}
     // const botMessage = response.choices[0].message;
     if (!botMessage.content) {
-        return;
+        return { role: botMessage.role, content: 'Lo siento mucho, no puedo ayudarte en este momento' };
     }
     return botMessage
 }
+//Funcion que crea y retorna el modelo de IA basandose en el modelo que selecciono el usuario
+//Retorna null en caso de no poder crearse el modelo
 async function CreateEngine(selectedModel: string) {
     if (!selectedModel) {
         alert('Por favor selecciona modelo antes enviar un mensaje.')
         return
     }
-    console.log({ selectedModel })
     let newEngine;
     try {
         newEngine = await CreateWebWorkerMLCEngine(
@@ -153,7 +162,6 @@ async function CreateEngine(selectedModel: string) {
                 },
             },
         );
-        console.log({ newEngine })
         return newEngine
     } catch (error) {
         console.log(error)
@@ -161,6 +169,7 @@ async function CreateEngine(selectedModel: string) {
     }
 
 }
+//Funcion que agraga los mensajes obtenidos del usurio y el bot al DOM. Agrega los mjs al localStorage
 async function AddMessagesToChat(e: SubmitEvent) {
     e.preventDefault();
     errorMessage.style.display = "none";
@@ -190,8 +199,9 @@ async function AddMessagesToChat(e: SubmitEvent) {
     messages.push(userMessage)
     input.value = "";
     button.setAttribute('disabled', 'true');
-    const botMessage = await GenerateMessageBot(engine) as MessagesInterface;
-    messages.push({ role: botMessage?.role, content: botMessage?.content });
+
+    const botMessage = await GenerateMessageBot(engine!) as MessagesInterface;
+    messages.push({ role: botMessage.role, content: botMessage.content });
 
     conversation.push(userMessage, { role: botMessage.role, content: botMessage.content })
     button.removeAttribute("disabled");

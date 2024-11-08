@@ -33,5 +33,5 @@ export function saveMessage(content: Values) {
 //       ]
 //     ],
 //     selectedModel: 'TinyLlama-1.1B-Chat-v0.4-q4f32_1-MLC',
-//     email: 'juanplazas28pa@gmail.com'
+//     email: 'user@gmail.com'
 //   }

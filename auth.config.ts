@@ -1,7 +1,6 @@
 import GitHub from '@auth/core/providers/github'
 import Google from '@auth/core/providers/google'
 import { defineConfig } from 'auth-astro'
-import { db, User } from 'astro:db'
 
 export default defineConfig({
     providers: [

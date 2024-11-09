@@ -148,7 +148,6 @@ async function CreateEngine(selectedModel: string) {
             selectedModel,
             {
                 initProgressCallback: (info) => {
-                    console.log({ info })
                     if (info.progress === 1) {
                         info_load_engine.textContent = 'Completado.';
                         modal.style.display = 'none';
@@ -165,7 +164,7 @@ async function CreateEngine(selectedModel: string) {
         return newEngine
     } catch (error) {
         console.log(error)
-        return
+        return null
     }
 
 }

@@ -7,7 +7,7 @@ interface Values {
     name: string
 }
 export function saveMessage(content: Values) {
-    const { email, messages, model, name, conversation } = content;
+    const { email, messages, model, conversation } = content;
     const infoToSave = {
         email,
         model,

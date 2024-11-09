@@ -6,7 +6,15 @@ const { title } = Astro.props;
 <html lang="es">
     <head>
         <meta charset="utf-8" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta property="og:title" content="Chat-IA" />
+        <meta
+            property="og:description"
+            content="Conversa con una IA avanzada en tiempo real. Obtén respuestas rápidas y precisas, todo basado en la última tecnología de inteligencia artificial."
+        />
+        <meta property="og:image" content="/chat.webp" />
+        <meta property="og:url" content="https://chat-ia-xi.vercel.app/" />
+        <meta property="og:type" content="website" />
+        <link rel="icon" type="image/svg+xml" href="/icon.webp" />
         <meta name="viewport" content="width=device-width" />
         <meta name="generator" content={Astro.generator} />
         <link

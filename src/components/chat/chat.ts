@@ -91,8 +91,8 @@ function CreateMessage(role: Role, message: string) {
     const text = message_container.querySelector(
         "p",
     ) as HTMLParagraphElement;
-    const image_user = userInfo.image ? userInfo.image : "/public/user.png";
-    const image_bot = "/public/bot.png";
+    const image_user = userInfo.image ? userInfo.image : "/user.png";
+    const image_bot = "/bot.png";
     const user_name = userInfo.name ?? 'Tú';
 
     message_container.classList.add(role);

@@ -43,6 +43,7 @@ if (session) {
 	.container_session {
 		width: 50dvw;
 		height: min-content;
+		max-width: 700px;
 		padding: 30px 20px;
 		background-color: #fff;
 		box-shadow: 0px 0px 15px #0004;
@@ -69,6 +70,31 @@ if (session) {
 				list-style: decimal;
 				&::marker {
 					font-weight: bold;
+				}
+			}
+		}
+	}
+	@media screen and (width <= 930px) {
+		.container_session {
+			flex-direction: column;
+		}
+		.consideraciones {
+			width: 100%;
+		}
+	}
+	@media screen and (width <= 550px) {
+		.consideraciones {
+			> h2 {
+				font-size: 1.3rem;
+				font-weight: 600;
+			}
+			> ol {
+				> li {
+					font-size: 0.85rem;
+					list-style: decimal;
+					&::marker {
+						font-weight: bold;
+					}
 				}
 			}
 		}
